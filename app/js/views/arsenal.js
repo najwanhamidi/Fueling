@@ -14,11 +14,11 @@ function editPacket(p) {
       b.innerHTML = `<div class="fields">
         <label class="field"><span class="lbl">Name</span><input type="text" data-p="name" value="${esc(it.name || '')}" placeholder="e.g. Maurten 100"></label>
         <label class="field"><span class="lbl">Type</span><select data-p="kind">${KINDS.map(([v, l]) => `<option value="${v}" ${it.kind === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-        <label class="field"><span class="lbl">Carbs per packet</span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-p="carbs" value="${it.carbs ?? ''}"><span class="u">g</span></div></label>
-        <label class="field"><span class="lbl">Sodium</span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-p="sodium" value="${it.sodium ?? ''}"><span class="u">mg</span></div></label>
-        <label class="field"><span class="lbl">Caffeine</span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-p="caffeine" value="${it.caffeine ?? ''}"><span class="u">mg</span></div></label>
-        <label class="field"><span class="lbl">Fluid <span class="muted">drinks</span></span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-p="fluid" value="${it.fluid ?? ''}"><span class="u">ml</span></div></label>
-        <label class="field"><span class="lbl">Quantity owned</span><input type="number" inputmode="numeric" data-p="qty" value="${it.qty ?? ''}"></label>
+        <label class="field"><span class="lbl">Carbs per packet</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-p="carbs" value="${it.carbs ?? ''}"><span class="u">g</span></div></label>
+        <label class="field"><span class="lbl">Sodium</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-p="sodium" value="${it.sodium ?? ''}"><span class="u">mg</span></div></label>
+        <label class="field"><span class="lbl">Caffeine</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-p="caffeine" value="${it.caffeine ?? ''}"><span class="u">mg</span></div></label>
+        <label class="field"><span class="lbl">Fluid <span class="muted">drinks</span></span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-p="fluid" value="${it.fluid ?? ''}"><span class="u">ml</span></div></label>
+        <label class="field"><span class="lbl">Quantity owned</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-p="qty" value="${it.qty ?? ''}"></label>
       </div>`;
       $$('[data-p]', b).forEach((el) => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
         const k = el.dataset.p;

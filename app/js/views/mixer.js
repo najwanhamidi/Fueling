@@ -119,7 +119,7 @@ export function mount(root) {
           <div class="fields">
             <label class="field"><span class="lbl">Recipe name</span><input type="text" data-k="name" value="${esc(st.name || '')}" placeholder="e.g. 1:0.8 gel batch"></label>
             <label class="field"><span class="lbl">Number of ingredients</span>
-              <div class="row nowrap"><button class="btn" data-cnt="-1">−</button><input type="number" min="2" max="8" value="${st.count}" data-count style="text-align:center"><button class="btn" data-cnt="1">+</button></div></label>
+              <div class="row nowrap"><button class="btn" data-cnt="-1">−</button><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" min="2" max="8" value="${st.count}" data-count style="text-align:center"><button class="btn" data-cnt="1">+</button></div></label>
           </div>
           <div style="margin-top:14px" class="stack">
             <label class="switch"><input type="checkbox" data-ratio ${st.ratioOn ? 'checked' : ''}> Auto-calculate ingredients 2…${st.count} from a ratio to ingredient 1</label>
@@ -134,7 +134,7 @@ export function mount(root) {
                   <label class="field"><span class="lbl">Target</span><select data-k="ratioTarget">
                     <option value="first" ${st.ratioTarget === 'first' ? 'selected' : ''}>Carbs from ingredient 1</option>
                     <option value="total" ${st.ratioTarget === 'total' ? 'selected' : ''}>Total carbs of the mix</option></select></label>
-                  <label class="field"><span class="lbl">Carbs</span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-k="ratioValue" value="${st.ratioValue ?? ''}"><span class="u">g</span></div></label>
+                  <label class="field"><span class="lbl">Carbs</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-k="ratioValue" value="${st.ratioValue ?? ''}"><span class="u">g</span></div></label>
                 </div>
                 <div class="tiny muted">Set each ingredient's ratio value below (ingredient 1 is the reference). Zero-carb items (water, salt) use fixed grams.</div>
               </div>` : ''}
@@ -144,12 +144,12 @@ export function mount(root) {
         <div class="card">
           <h3>Extras</h3>
           <div class="fields">
-            <label class="field"><span class="lbl">Add water <span class="muted">optional</span></span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-k="water" value="${st.water ?? ''}" placeholder="0"><span class="u">g/ml</span></div></label>
+            <label class="field"><span class="lbl">Add water <span class="muted">optional</span></span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-k="water" value="${st.water ?? ''}" placeholder="0"><span class="u">g/ml</span></div></label>
             <label class="field"><span class="lbl">Split into servings</span><select data-k="split">
               <option value="none" ${st.split === 'none' ? 'selected' : ''}>No</option>
               <option value="count" ${st.split === 'count' ? 'selected' : ''}>Number of servings</option>
               <option value="carbs" ${st.split === 'carbs' ? 'selected' : ''}>Carbs per serving</option></select></label>
-            ${st.split !== 'none' ? `<label class="field"><span class="lbl">${st.split === 'count' ? 'Servings' : 'Carbs / serving'}</span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-k="splitValue" value="${st.splitValue ?? ''}"><span class="u">${st.split === 'count' ? '×' : 'g'}</span></div></label>` : ''}
+            ${st.split !== 'none' ? `<label class="field"><span class="lbl">${st.split === 'count' ? 'Servings' : 'Carbs / serving'}</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-k="splitValue" value="${st.splitValue ?? ''}"><span class="u">${st.split === 'count' ? '×' : 'g'}</span></div></label>` : ''}
           </div>
         </div>
       </div>
@@ -165,7 +165,7 @@ export function mount(root) {
       const ev = el.tagName === 'SELECT' ? 'change' : 'input';
       el.addEventListener(ev, () => {
         const k = el.dataset.k;
-        st[k] = el.type === 'number' ? num(el.value) : el.value;
+        st[k] = (el.type === 'number' || 'num' in el.dataset) ? num(el.value) : el.value;
         vs.save();
         if (k === 'split' || k === 'ratioTarget') draw(); else { refreshIngGrams(); result(); }
       });
@@ -205,10 +205,10 @@ export function mount(root) {
         ${o.food ? foodSummaryHtml(o.food) : `${sourceButtons('ing' + i)}
           <select data-generic="${i}" style="margin-top:6px"><option value="">…or a generic ingredient (approx. values)</option>${GENERIC.map((g, gi) => `<option value="${gi}">${esc(g.name)}</option>`).join('')}</select>`}
         ${o.food ? `<div class="fields tight">
-          ${st.ratioOn ? (i === 0 ? `<div class="field"><span class="lbl">Ratio</span><input type="number" step="any" data-ing="ratio" value="${ing.ratio ?? 1}"></div>` : (ratioField ? `<label class="field"><span class="lbl">Ratio to #1</span><input type="number" inputmode="decimal" step="any" data-ing="ratio" value="${ing.ratio ?? 1}"></label>` : '')) : ''}
+          ${st.ratioOn ? (i === 0 ? `<div class="field"><span class="lbl">Ratio</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-ing="ratio" value="${ing.ratio ?? 1}"></div>` : (ratioField ? `<label class="field"><span class="lbl">Ratio to #1</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-ing="ratio" value="${ing.ratio ?? 1}"></label>` : '')) : ''}
           ${!st.ratioOn || i > 0 ? `<label class="field"><span class="lbl">Input as</span><select data-ing="mode"><option value="carbs" ${ing.mode !== 'grams' ? 'selected' : ''}>${st.ratioOn ? 'By ratio' : 'Carbs (g)'}</option><option value="grams" ${ing.mode === 'grams' ? 'selected' : ''}>Fixed grams</option></select></label>` : ''}
-          ${showCarbInput ? `<label class="field"><span class="lbl">Carbs required</span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-ing="carbs" value="${ing.carbs ?? ''}"><span class="u">g</span></div></label>` : ''}
-          ${showGramInput ? `<label class="field"><span class="lbl">Amount</span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-ing="grams" value="${ing.grams ?? ''}"><span class="u">${o.food.basisUnit}</span></div></label>` : ''}
+          ${showCarbInput ? `<label class="field"><span class="lbl">Carbs required</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-ing="carbs" value="${ing.carbs ?? ''}"><span class="u">g</span></div></label>` : ''}
+          ${showGramInput ? `<label class="field"><span class="lbl">Amount</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-ing="grams" value="${ing.grams ?? ''}"><span class="u">${o.food.basisUnit}</span></div></label>` : ''}
           <label class="field"><span class="lbl">Carb type</span><select data-ing="ctype">${Object.keys(CTYPES).map((k) => `<option value="${k}" ${(ing.ctype || guessCType(o.food.name)) === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
         </div>
         <div class="small muted" data-c>${o.c != null ? `→ ${fmt(o.c, 'g')} carbs` : ''}${o.err ? ` <span class="badge warn">${esc(o.err)}</span>` : ''}</div>` : ''}

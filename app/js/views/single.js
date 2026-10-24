@@ -23,10 +23,10 @@ export function mount(root) {
           <div class="card-head"><h2>2 · What do you need?</h2>${seg('mode', [['carbs', 'Target carbs'], ['amount', 'Fixed amount']], st.mode)}</div>
           ${st.mode === 'carbs' ? `
             <label class="field"><span class="lbl">Carbohydrate required</span>
-              <div class="input-unit"><input type="number" inputmode="decimal" step="any" data-in="targetCarbs" value="${st.targetCarbs ?? ''}"><span class="u">g</span></div></label>
+              <div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-in="targetCarbs" value="${st.targetCarbs ?? ''}"><span class="u">g</span></div></label>
             <div class="chips" style="margin-top:10px">${[15, 20, 22, 25, 30, 40, 45, 60, 75, 90, 120].map((c) => `<button class="chip ${+st.targetCarbs === c ? 'active' : ''}" data-chip="${c}">${c} g</button>`).join('')}</div>`
           : `<label class="field"><span class="lbl">Amount</span>
-              <div class="input-unit"><input type="number" inputmode="decimal" step="any" data-in="amount" value="${st.amount ?? ''}"><span class="u">${food?.basisUnit || 'g'}</span></div></label>`}
+              <div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-in="amount" value="${st.amount ?? ''}"><span class="u">${food?.basisUnit || 'g'}</span></div></label>`}
         </div>
       </div>
       <div class="stack" data-result></div>

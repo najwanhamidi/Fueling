@@ -15,9 +15,9 @@ export function inventoryHtml(inv) {
         <input type="checkbox" class="inv-on" data-pk="on" ${p.on !== false ? 'checked' : ''} aria-label="Use this packet">
         <input type="text" class="inv-name" data-pk="name" value="${esc(p.name)}" aria-label="Packet name">
         <div class="inv-nums">
-          <label><span>Carbs g</span><input type="number" inputmode="decimal" step="any" data-pk="carbs" value="${p.carbs ?? ''}"></label>
-          <label><span>Qty</span><input type="number" inputmode="numeric" step="1" data-pk="qty" value="${p.qty === -1 ? '' : p.qty ?? ''}" placeholder="∞" title="Leave blank for unlimited (e.g. aid-station drink)"></label>
-          <label><span>Caf mg</span><input type="number" inputmode="numeric" step="any" data-pk="caffeine" value="${p.caffeine || ''}" placeholder="0"></label>
+          <label><span>Carbs g</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-pk="carbs" value="${p.carbs ?? ''}"></label>
+          <label><span>Qty</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="1" data-pk="qty" value="${p.qty === -1 ? '' : p.qty ?? ''}" placeholder="∞" title="Leave blank for unlimited (e.g. aid-station drink)"></label>
+          <label><span>Caf mg</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-pk="caffeine" value="${p.caffeine || ''}" placeholder="0"></label>
         </div>
         <button class="btn small ghost inv-del" data-pk-del title="Remove" aria-label="Remove packet">✕</button>
       </div>`).join('') : '<div class="empty">No packets. Add some below.</div>'}
@@ -67,7 +67,7 @@ export function preStartHtml(st, inv) {
   return `
     <label class="switch"><input type="checkbox" data-k="preOn" ${st.preOn ? 'checked' : ''}> Take the first fuel <b>before</b> the start</label>
     ${st.preOn ? `<div class="fields" style="margin-top:10px">
-      <label class="field"><span class="lbl">Minutes before start</span><div class="input-unit"><input type="number" inputmode="numeric" data-k="preMin" value="${st.preMin ?? 10}"><span class="u">min</span></div></label>
+      <label class="field"><span class="lbl">Minutes before start</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="preMin" value="${st.preMin ?? 10}"><span class="u">min</span></div></label>
       <label class="field"><span class="lbl">Which packet</span><select data-k="preType"><option value="">Auto (smallest, non-caffeinated)</option>${opts.map((p) => `<option value="${esc(p.id)}" ${st.preType === p.id ? 'selected' : ''}>${esc(p.name)} (${fmt(p.carbs, 'g')})</option>`).join('')}</select></label>
       <label class="check" style="align-self:end"><input type="checkbox" data-k="preCount" ${st.preCount !== false ? 'checked' : ''}> Counts toward the hourly target</label>
     </div>` : ''}`;
@@ -173,7 +173,7 @@ export function bindKeys(root, st, onChange, redrawKeys = []) {
     el.addEventListener(ev, () => {
       let v;
       if (el.type === 'checkbox') v = el.checked;
-      else if (el.type === 'number') v = num(el.value);
+      else if ((el.type === 'number' || 'num' in el.dataset)) v = num(el.value);
       else v = el.value;
       st[k] = v;
       onChange(redrawKeys.includes(k) || el.type === 'checkbox' || el.tagName === 'SELECT');

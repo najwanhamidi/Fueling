@@ -16,7 +16,7 @@ export function mount(root) {
           <h2>General</h2>
           <div class="fields">
             <label class="field"><span class="lbl">Theme</span><select data-s="theme">${[['auto', 'Match device'], ['dark', 'Dark'], ['light', 'Light']].map(([v, l]) => `<option value="${v}" ${s.theme === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-            <label class="field"><span class="lbl">Default body mass</span><div class="input-unit"><input type="number" inputmode="decimal" data-s="massKg" value="${s.massKg ?? ''}"><span class="u">kg</span></div></label>
+            <label class="field"><span class="lbl">Default body mass</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-s="massKg" value="${s.massKg ?? ''}"><span class="u">kg</span></div></label>
           </div>
         </div>
         <div class="card stack">
@@ -69,7 +69,7 @@ export function mount(root) {
       const ev = el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input';
       el.addEventListener(ev, () => {
         const k = el.dataset.s;
-        const v = el.type === 'checkbox' ? el.checked : el.type === 'number' ? num(el.value) : el.value;
+        const v = el.type === 'checkbox' ? el.checked : (el.type === 'number' || 'num' in el.dataset) ? num(el.value) : el.value;
         settings.set({ [k]: v });
         if (k === 'theme') applyTheme();
         if (k === 'aiProvider') draw();

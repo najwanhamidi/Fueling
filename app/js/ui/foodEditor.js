@@ -57,15 +57,15 @@ export function openFoodEditor(food, opts = {}) {
                 <label class="field"><span class="lbl">Brand (optional)</span><input type="text" data-f="brand" value="${esc(f.brand)}"></label>
               </div>
               <div class="fields">
-                <label class="field"><span class="lbl">Values are per</span><div class="row nowrap"><input type="number" inputmode="decimal" step="any" data-f="basis" value="${f.basis}"><select data-f="basisUnit" style="width:84px"><option value="g" ${f.basisUnit === 'g' ? 'selected' : ''}>g</option><option value="ml" ${f.basisUnit === 'ml' ? 'selected' : ''}>ml</option></select></div></label>
-                <label class="field"><span class="lbl">Serving size <span class="muted">optional</span></span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-f="servingSize" value="${f.servingSize ?? ''}" placeholder="e.g. 40"><span class="u">${esc(f.basisUnit)}</span></div></label>
+                <label class="field"><span class="lbl">Values are per</span><div class="row nowrap"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-f="basis" value="${f.basis}"><select data-f="basisUnit" style="width:84px"><option value="g" ${f.basisUnit === 'g' ? 'selected' : ''}>g</option><option value="ml" ${f.basisUnit === 'ml' ? 'selected' : ''}>ml</option></select></div></label>
+                <label class="field"><span class="lbl">Serving size <span class="muted">optional</span></span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-f="servingSize" value="${f.servingSize ?? ''}" placeholder="e.g. 40"><span class="u">${esc(f.basisUnit)}</span></div></label>
                 <label class="field"><span class="lbl">Serving name</span><input type="text" data-f="servingName" value="${esc(f.servingName || '')}" placeholder="gel, scoop, sachet…"></label>
               </div>
               ${ocr ? `<details class="more"><summary>Recognised text</summary><div class="inner"><textarea readonly rows="8">${esc(ocr.rawText || ocr.text || '')}</textarea></div></details>` : ''}
             </div>
             <div class="stack">
               <div class="row"><b>Energy</b><span class="spacer"></span><div class="seg" data-eu><button type="button" data-v="kcal" class="${energyUnit === 'kcal' ? 'active' : ''}">kcal</button><button type="button" data-v="kj" class="${energyUnit === 'kj' ? 'active' : ''}">kJ</button></div></div>
-              <div class="input-unit"><input type="number" inputmode="decimal" step="any" data-n="energyKcal" class="${cls('energyKcal')}" value="${energyVal()}" placeholder="unknown"><span class="u">${energyUnit === 'kcal' ? 'kcal' : 'kJ'}</span></div>
+              <div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-n="energyKcal" class="${cls('energyKcal')}" value="${energyVal()}" placeholder="unknown"><span class="u">${energyUnit === 'kcal' ? 'kcal' : 'kJ'}</span></div>
               <div data-atw></div>
               <div class="fields tight">
                 ${CORE.map((k) => field(k)).join('')}
@@ -88,7 +88,7 @@ export function openFoodEditor(food, opts = {}) {
         let unit = d.unit;
         let label = d.label;
         if (k === 'sodium' && sodiumMode === 'salt') { unit = 'g'; label = 'Salt'; v = v == null ? null : +(v / SODIUM_MG_PER_SALT_G).toFixed(3); }
-        return `<label class="field"><span class="lbl">${esc(label)}</span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-n="${k}" class="${cls(k)}" value="${v ?? ''}" placeholder="—"><span class="u">${unit}</span></div></label>`;
+        return `<label class="field"><span class="lbl">${esc(label)}</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-n="${k}" class="${cls(k)}" value="${v ?? ''}" placeholder="—"><span class="u">${unit}</span></div></label>`;
       };
 
       const updateAtwater = () => {

@@ -3,7 +3,7 @@ import { $, esc, toast } from './ui.js';
 import { settings } from './store.js';
 import { getImageTarget } from './ui/scan.js';
 
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 
 const ROUTES = {
   'single': { title: 'Carb calculator', icon: '🧮', short: 'Calc', load: () => import('./views/single.js') },

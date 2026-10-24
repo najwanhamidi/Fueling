@@ -161,7 +161,7 @@ export function bindInputs(root, st, onChange) {
     el.addEventListener(ev, () => {
       let v;
       if (el.type === 'checkbox') v = el.checked;
-      else if (el.dataset.type === 'num' || el.type === 'number') v = num(el.value);
+      else if (el.dataset.type === 'num' || (el.type === 'number' || 'num' in el.dataset)) v = num(el.value);
       else v = el.value;
       setPath(st, k, v);
       onChange?.(k, v, el);

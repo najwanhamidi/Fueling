@@ -23,32 +23,32 @@ export function mount(root) {
         <div class="card">
           <div class="card-head"><h2>Runner</h2><div class="row"><button class="btn small" data-load>Load</button><button class="btn small" data-save>Save</button></div></div>
           <div class="fields">
-            <label class="field"><span class="lbl">Body mass</span><div class="input-unit"><input type="number" inputmode="decimal" data-k="mass" value="${st.mass ?? ''}"><span class="u">kg</span></div></label>
+            <label class="field"><span class="lbl">Body mass</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="mass" value="${st.mass ?? ''}"><span class="u">kg</span></div></label>
             <label class="field"><span class="lbl">Sex <span class="muted">(leg-muscle default)</span></span><select data-k="sex"><option value="m" ${st.sex === 'm' ? 'selected' : ''}>Male</option><option value="f" ${st.sex === 'f' ? 'selected' : ''}>Female</option></select></label>
             <label class="field"><span class="lbl">Fitness from</span><select data-k="vo2Mode"><option value="race" ${st.vo2Mode === 'race' ? 'selected' : ''}>Recent race result</option><option value="direct" ${st.vo2Mode === 'direct' ? 'selected' : ''}>Known VO₂max</option></select></label>
             ${st.vo2Mode === 'direct'
-              ? `<label class="field"><span class="lbl">VO₂max</span><div class="input-unit"><input type="number" inputmode="decimal" data-k="vo2max" value="${st.vo2max ?? ''}"><span class="u">ml/kg/min</span></div></label>`
+              ? `<label class="field"><span class="lbl">VO₂max</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="vo2max" value="${st.vo2max ?? ''}"><span class="u">ml/kg/min</span></div></label>`
               : `<label class="field"><span class="lbl">Recent race</span><select data-k="refDist">${DISTANCES.slice(0, 7).map((d) => `<option value="${d.id}" ${st.refDist === d.id ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}</select></label>
-                 <label class="field"><span class="lbl">Time <span class="muted">h:mm:ss</span></span><input type="text" inputmode="numeric" data-k="refTime" value="${esc(st.refTime)}"></label>`}
+                 <label class="field"><span class="lbl">Time <span class="muted">h:mm:ss</span></span><input type="text" data-k="refTime" value="${esc(st.refTime)}"></label>`}
           </div>
         </div>
         <div class="card">
           <h2>Target race</h2>
           <div class="fields">
             <label class="field"><span class="lbl">Distance</span><select data-k="distId">${DISTANCES.map((d) => `<option value="${d.id}" ${st.distId === d.id ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}<option value="custom" ${st.distId === 'custom' ? 'selected' : ''}>Custom…</option></select></label>
-            ${st.distId === 'custom' ? `<label class="field"><span class="lbl">km</span><input type="number" inputmode="decimal" step="any" data-k="km" value="${st.km ?? ''}"></label>` : ''}
-            <label class="field"><span class="lbl">Target finish <span class="muted">h:mm</span></span><input type="text" inputmode="numeric" data-k="finish" value="${esc(st.finish)}"></label>
+            ${st.distId === 'custom' ? `<label class="field"><span class="lbl">km</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-k="km" value="${st.km ?? ''}"></label>` : ''}
+            <label class="field"><span class="lbl">Target finish <span class="muted">h:mm</span></span><input type="text" data-k="finish" value="${esc(st.finish)}"></label>
             <label class="field"><span class="lbl">Glycogen status</span><select data-k="glyState">${[['normal', 'Normal diet'], ['partial', 'Partial load (1 high-carb day)'], ['loaded', 'Full carb-load (36–48 h)']].map(([v, l]) => `<option value="${v}" ${st.glyState === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
             <label class="field"><span class="lbl">Pre-race breakfast</span><select data-k="fed"><option value="true" ${st.fed !== false && st.fed !== 'false' ? 'selected' : ''}>Yes (liver topped up)</option><option value="false" ${st.fed === false || st.fed === 'false' ? 'selected' : ''}>No (overnight fast)</option></select></label>
             <label class="field"><span class="lbl">Gut tolerance</span><select data-k="gut">${Object.entries(GUT).map(([k, g]) => `<option value="${k}" ${st.gut === k ? 'selected' : ''}>${esc(g.label)}</option>`).join('')}</select></label>
           </div>
           <details class="more" style="margin-top:12px"><summary>Model parameters</summary><div class="inner">
             <div class="fields">
-              <label class="field"><span class="lbl">Oxidation efficiency</span><div class="input-unit"><input type="number" data-k="eff" value="${st.eff}"><span class="u">%</span></div></label>
-              <label class="field"><span class="lbl">Safety reserve</span><div class="input-unit"><input type="number" data-k="reserve" value="${st.reserve}"><span class="u">%</span></div></label>
-              <label class="field"><span class="lbl">Energy cost</span><div class="input-unit"><input type="number" step="0.05" data-k="kcal" value="${st.kcal}"><span class="u">kcal/kg/km</span></div></label>
+              <label class="field"><span class="lbl">Oxidation efficiency</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="eff" value="${st.eff}"><span class="u">%</span></div></label>
+              <label class="field"><span class="lbl">Safety reserve</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="reserve" value="${st.reserve}"><span class="u">%</span></div></label>
+              <label class="field"><span class="lbl">Energy cost</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="0.05" data-k="kcal" value="${st.kcal}"><span class="u">kcal/kg/km</span></div></label>
               <label class="field"><span class="lbl">Fat adaptation</span><select data-k="fatAdapt">${[[0, 'None'], [0.05, 'Some (−5% carb use)'], [0.1, 'High (−10%)']].map(([v, l]) => `<option value="${v}" ${+st.fatAdapt === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-              <label class="field"><span class="lbl">Stop fuelling before finish</span><div class="input-unit"><input type="number" data-k="endBuffer" value="${st.endBuffer ?? 15}"><span class="u">min</span></div></label>
+              <label class="field"><span class="lbl">Stop fuelling before finish</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="endBuffer" value="${st.endBuffer ?? 15}"><span class="u">min</span></div></label>
               <label class="field"><span class="lbl">Start clock</span><input type="time" data-k="startClock" value="${esc(st.startClock || '')}"></label>
             </div>
             <p class="tiny muted">Efficiency = share of ingested carbohydrate actually oxidised and sparing glycogen (~60–80%). Reserve = glycogen you shouldn't count on (muscle never fully empties).</p>
@@ -125,7 +125,7 @@ export function mount(root) {
         <p class="tiny muted">${wfNone ? `Without any fuel, you could hold up to ~${fmtPace((wfNone * 60) / dist)}/km (${fmtDur(wfNone)}) before glycogen runs out.` : ''}</p>
         <div class="row" style="margin-top:8px"><span class="small muted">Plan with</span>
           <div class="seg" data-rc>${[['rec', `Recommended ${rec}`], ['min', `Minimum ${minR}`], ['guide', `Guidelines ${g.target}`], ['custom', 'Custom']].map(([v, l]) => `<button type="button" data-v="${v}" class="${(st.rateChoice || 'rec') === v ? 'active' : ''}">${l}</button>`).join('')}</div>
-          ${st.rateChoice === 'custom' ? `<input type="number" style="width:100px" data-rcv value="${st.rateCustom ?? rec}"> g/h` : ''}
+          ${st.rateChoice === 'custom' ? `<input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:100px" data-rcv value="${st.rateCustom ?? rec}"> g/h` : ''}
         </div>
       </div>
       <div class="card"><div class="card-head"><h2>Race-day schedule</h2><span class="badge">${choice} g/h</span></div>${plan ? planHtml(plan, { title, massKg: m, showKm: true }) : '<div class="empty">No fuel needed.</div>'}</div>

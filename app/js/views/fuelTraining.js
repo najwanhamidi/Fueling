@@ -24,10 +24,10 @@ export function mount(root) {
           <div class="card-head"><h2>Session</h2><div class="row"><button class="btn small" data-load>Load</button><button class="btn small" data-save>Save</button></div></div>
           <div class="fields">
             <label class="field"><span class="lbl">Session type</span><select data-k="type">${Object.entries(SESSIONS).map(([k, s]) => `<option value="${k}" ${st.type === k ? 'selected' : ''}>${esc(s.label)}</option>`).join('')}</select></label>
-            <label class="field"><span class="lbl">Duration <span class="muted">h:mm</span></span><input type="text" inputmode="numeric" data-k="duration" value="${esc(st.duration)}"></label>
+            <label class="field"><span class="lbl">Duration <span class="muted">h:mm</span></span><input type="text" data-k="duration" value="${esc(st.duration)}"></label>
             <label class="field"><span class="lbl">Gut training</span><select data-k="gut">${Object.entries(GUT).map(([k, g]) => `<option value="${k}" ${st.gut === k ? 'selected' : ''}>${esc(g.label)}</option>`).join('')}</select></label>
-            <label class="field"><span class="lbl">Race-day target <span class="muted">for rehearsals</span></span><div class="input-unit"><input type="number" data-k="raceRate" value="${st.raceRate ?? ''}"><span class="u">g/h</span></div></label>
-            <label class="field"><span class="lbl">Body mass</span><div class="input-unit"><input type="number" inputmode="decimal" data-k="mass" value="${st.mass ?? ''}"><span class="u">kg</span></div></label>
+            <label class="field"><span class="lbl">Race-day target <span class="muted">for rehearsals</span></span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="raceRate" value="${st.raceRate ?? ''}"><span class="u">g/h</span></div></label>
+            <label class="field"><span class="lbl">Body mass</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="mass" value="${st.mass ?? ''}"><span class="u">kg</span></div></label>
             <label class="field"><span class="lbl">Training load (daily carbs)</span><select data-k="load">${Object.entries(DAILY_LOAD).map(([k, d]) => `<option value="${k}" ${st.load === k ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}</select></label>
           </div>
         </div>
@@ -36,10 +36,10 @@ export function mount(root) {
         <div class="card">
           <h2>Gut-training plan</h2>
           <div class="fields">
-            <label class="field"><span class="lbl">Comfortable now</span><div class="input-unit"><input type="number" data-k="gpCurrent" value="${st.gpCurrent}"><span class="u">g/h</span></div></label>
-            <label class="field"><span class="lbl">Race target</span><div class="input-unit"><input type="number" data-k="gpTarget" value="${st.gpTarget}"><span class="u">g/h</span></div></label>
-            <label class="field"><span class="lbl">Weeks to race</span><input type="number" data-k="gpWeeks" value="${st.gpWeeks}"></label>
-            <label class="field"><span class="lbl">Fuelled runs / week</span><input type="number" data-k="gpPerWeek" value="${st.gpPerWeek}"></label>
+            <label class="field"><span class="lbl">Comfortable now</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="gpCurrent" value="${st.gpCurrent}"><span class="u">g/h</span></div></label>
+            <label class="field"><span class="lbl">Race target</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="gpTarget" value="${st.gpTarget}"><span class="u">g/h</span></div></label>
+            <label class="field"><span class="lbl">Weeks to race</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="gpWeeks" value="${st.gpWeeks}"></label>
+            <label class="field"><span class="lbl">Fuelled runs / week</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="gpPerWeek" value="${st.gpPerWeek}"></label>
           </div>
           <div data-gp style="margin-top:12px"></div>
         </div>
@@ -68,7 +68,7 @@ export function mount(root) {
         <div class="card-head"><h2>${esc(s.label)}</h2><span class="badge">${fmtDur(D)}</span></div>
         <div class="big-result"><span class="value">${rate}</span><span class="unit">g carbs / hour${s.rate[1] ? ` (range ${s.rate[0]}–${s.rate[1]})` : ''}</span></div>
         ${s.notes.map((n) => `<p class="small">${esc(n)}</p>`).join('')}
-        <div class="row"><label class="field" style="max-width:200px"><span class="lbl">Override g/h</span><input type="number" data-ovr value="${st.rateOverride ?? ''}" placeholder="${s.target}"></label></div>
+        <div class="row"><label class="field" style="max-width:200px"><span class="lbl">Override g/h</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-ovr value="${st.rateOverride ?? ''}" placeholder="${s.target}"></label></div>
       </div>
       <div class="card stack">
         <div><b>Before:</b> ${esc(s.pre)}</div>

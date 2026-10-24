@@ -20,16 +20,16 @@ export function mount(root) {
         <div class="card">
           <div class="card-head"><h2>Your plan</h2><div class="row"><button class="btn small" data-load>Load</button><button class="btn small" data-save>Save</button></div></div>
           <div class="fields">
-            <label class="field"><span class="lbl">Carbs per hour</span><div class="input-unit"><input type="number" inputmode="decimal" data-k="rate" value="${st.rate ?? ''}"><span class="u">g/h</span></div></label>
-            <label class="field"><span class="lbl">Duration <span class="muted">h:mm</span></span><input type="text" inputmode="numeric" data-k="duration" value="${esc(st.duration)}" placeholder="2:30"></label>
+            <label class="field"><span class="lbl">Carbs per hour</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="rate" value="${st.rate ?? ''}"><span class="u">g/h</span></div></label>
+            <label class="field"><span class="lbl">Duration <span class="muted">h:mm</span></span><input type="text" data-k="duration" value="${esc(st.duration)}" placeholder="2:30"></label>
           </div>
           <div class="chips" style="margin-top:10px">${[30, 45, 60, 75, 90, 100, 120].map((r) => `<button class="chip ${+st.rate === r ? 'active' : ''}" data-rate="${r}">${r} g/h</button>`).join('')}</div>
           <details class="more" style="margin-top:12px"><summary>Timing options</summary><div class="inner">
             <div class="fields">
-              <label class="field"><span class="lbl">First intake at <span class="muted">min</span></span><input type="number" inputmode="numeric" data-k="firstAt" value="${st.firstAt ?? ''}" placeholder="auto"></label>
-              <label class="field"><span class="lbl">Stop fuelling before end</span><div class="input-unit"><input type="number" inputmode="numeric" data-k="endBuffer" value="${st.endBuffer ?? 0}"><span class="u">min</span></div></label>
+              <label class="field"><span class="lbl">First intake at <span class="muted">min</span></span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="firstAt" value="${st.firstAt ?? ''}" placeholder="auto"></label>
+              <label class="field"><span class="lbl">Stop fuelling before end</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="endBuffer" value="${st.endBuffer ?? 0}"><span class="u">min</span></div></label>
               <label class="field"><span class="lbl">Start clock <span class="muted">optional</span></span><input type="time" data-k="startClock" value="${esc(st.startClock || '')}"></label>
-              <label class="field"><span class="lbl">Pace <span class="muted">min:ss /km, for km marks</span></span><input type="text" inputmode="numeric" data-k="pace" value="${esc(st.pace || '')}" placeholder="5:30"></label>
+              <label class="field"><span class="lbl">Pace <span class="muted">min:ss /km, for km marks</span></span><input type="text" data-k="pace" value="${esc(st.pace || '')}" placeholder="5:30"></label>
             </div>
             <label class="check" style="margin-top:8px"><input type="checkbox" data-k="roundTo5" ${st.roundTo5 ? 'checked' : ''}> Round times to 5 min</label>
           </div></details>

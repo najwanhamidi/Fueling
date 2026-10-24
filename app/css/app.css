@@ -130,7 +130,7 @@ input[type=text], input[type=number], input[type=time], input[type=password], in
 }
 textarea { min-height: 90px; resize: vertical; font-family: var(--mono); font-size: .85rem; }
 input:focus, select:focus, textarea:focus { outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent); outline-offset: 1px; border-color: transparent; }
-input[type=number] { font-variant-numeric: tabular-nums; }
+input[type=number], input[data-num] { font-variant-numeric: tabular-nums; }
 input.detected { border-color: var(--good); box-shadow: inset 3px 0 0 var(--good); }
 input.lowconf { border-color: var(--warn); box-shadow: inset 3px 0 0 var(--warn); }
 .input-unit { position: relative; }

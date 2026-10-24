@@ -26,20 +26,20 @@ export function mount(root) {
             <select data-k="set"><option value="contemporary" ${st.set !== 'classic' ? 'selected' : ''}>Contemporary (2022–25 research: up to 120 g/h if gut-trained)</option><option value="classic" ${st.set === 'classic' ? 'selected' : ''}>Classic (ACSM 2016 / Jeukendrup 2014: max 90 g/h)</option></select></div>
           <div class="fields">
             <label class="field"><span class="lbl">Distance</span><select data-k="distId">${DISTANCES.map((d) => `<option value="${d.id}" ${st.distId === d.id ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}<option value="custom" ${st.distId === 'custom' ? 'selected' : ''}>Custom…</option></select></label>
-            ${st.distId === 'custom' ? `<label class="field"><span class="lbl">Distance km</span><input type="number" inputmode="decimal" step="any" data-k="km" value="${st.km ?? ''}"></label>` : ''}
-            <label class="field"><span class="lbl">Expected finish <span class="muted">h:mm</span></span><input type="text" inputmode="numeric" data-k="finish" value="${esc(st.finish)}" placeholder="1:55"></label>
+            ${st.distId === 'custom' ? `<label class="field"><span class="lbl">Distance km</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-k="km" value="${st.km ?? ''}"></label>` : ''}
+            <label class="field"><span class="lbl">Expected finish <span class="muted">h:mm</span></span><input type="text" data-k="finish" value="${esc(st.finish)}" placeholder="1:55"></label>
             <label class="field"><span class="lbl">Effort</span><select data-k="intensity">
               ${[['race', 'Race effort'], ['hard', 'Hard / tempo'], ['moderate', 'Steady'], ['easy', 'Easy (e.g. ultra pace)']].map(([v, l]) => `<option value="${v}" ${st.intensity === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
             <label class="field"><span class="lbl">Gut training</span><select data-k="gut">${Object.entries(GUT).map(([k, g]) => `<option value="${k}" ${st.gut === k ? 'selected' : ''}>${esc(g.label)}</option>`).join('')}</select></label>
-            <label class="field"><span class="lbl">Body mass</span><div class="input-unit"><input type="number" inputmode="decimal" data-k="mass" value="${st.mass ?? ''}"><span class="u">kg</span></div></label>
+            <label class="field"><span class="lbl">Body mass</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="mass" value="${st.mass ?? ''}"><span class="u">kg</span></div></label>
           </div>
           <details class="more" style="margin-top:12px"><summary>Conditions, hydration & timing</summary><div class="inner">
             <div class="fields">
               <label class="field"><span class="lbl">Climate</span><select data-k="climate">${[['cool', 'Cool < 15 °C'], ['temperate', 'Mild 15–24 °C'], ['hot', 'Hot > 25 °C'], ['hothumid', 'Hot & humid (tropics)']].map(([v, l]) => `<option value="${v}" ${st.climate === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-              <label class="field"><span class="lbl">Sweat rate <span class="muted">optional</span></span><div class="input-unit"><input type="number" inputmode="decimal" step="any" data-k="sweat" value="${st.sweat ?? ''}" placeholder="e.g. 1.2"><span class="u">L/h</span></div></label>
-              <label class="field"><span class="lbl">Stop fuelling before finish</span><div class="input-unit"><input type="number" inputmode="numeric" data-k="endBuffer" value="${st.endBuffer ?? 10}"><span class="u">min</span></div></label>
+              <label class="field"><span class="lbl">Sweat rate <span class="muted">optional</span></span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-k="sweat" value="${st.sweat ?? ''}" placeholder="e.g. 1.2"><span class="u">L/h</span></div></label>
+              <label class="field"><span class="lbl">Stop fuelling before finish</span><div class="input-unit"><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-k="endBuffer" value="${st.endBuffer ?? 10}"><span class="u">min</span></div></label>
               <label class="field"><span class="lbl">Start clock</span><input type="time" data-k="startClock" value="${esc(st.startClock || '')}"></label>
-              <label class="field"><span class="lbl">Aid stations every <span class="muted">km</span></span><input type="number" inputmode="decimal" step="any" data-k="aidKm" value="${st.aidKm ?? ''}" placeholder="e.g. 2.5"></label>
+              <label class="field"><span class="lbl">Aid stations every <span class="muted">km</span></span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" step="any" data-k="aidKm" value="${st.aidKm ?? ''}" placeholder="e.g. 2.5"></label>
             </div>
             <label class="check"><input type="checkbox" data-k="salty" ${st.salty ? 'checked' : ''}> Salty sweater (white streaks on kit)</label>
             <label class="check"><input type="checkbox" data-k="snapAid" ${st.snapAid ? 'checked' : ''}> Move intakes to aid stations (take gels with water)</label>
@@ -93,7 +93,7 @@ export function mount(root) {
         <div class="small muted">Evidence range for this duration: ${g.min}–${g.max} g/h${g.gutCap < g.max ? ` (capped at ${g.gutCap} for your gut training)` : ''} · total ≈ ${fmt((rate * D) / 60, 'g', { d: 0 })}</div>
         <p class="small">${esc(g.why)}</p>
         <div class="note small">${esc(g.carbType)}</div>
-        <div class="row" style="margin-top:10px"><label class="field" style="max-width:220px"><span class="lbl">Override g/h</span><input type="number" inputmode="decimal" data-ovr value="${st.rateOverride ?? ''}" placeholder="${g.target}"></label></div>
+        <div class="row" style="margin-top:10px"><label class="field" style="max-width:220px"><span class="lbl">Override g/h</span><input type="text" data-num autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-ovr value="${st.rateOverride ?? ''}" placeholder="${g.target}"></label></div>
       </div>
       <div class="card">
         <div class="card-head"><h2>Race-day schedule</h2></div>
