@@ -1,9 +1,9 @@
 // Service worker: offline app shell + runtime cache (incl. the on-device OCR engine and model).
-const VERSION = 'fueling-v1.0.1';
+const VERSION = 'fueling-v1.0.2';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png',
-  './js/app.js', './js/ui.js', './js/store.js', './js/nutrients.js',
+  './js/app.js', './js/ui.js', './js/store.js', './js/nutrients.js', './js/mix.js',
   './js/ui/scan.js', './js/ui/foodEditor.js',
   './js/ocr/ocr.js', './js/ocr/parser.js', './js/ocr/ai.js',
   './js/fuel/scheduler.js', './js/fuel/science.js', './js/fuel/components.js',

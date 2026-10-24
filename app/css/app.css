@@ -320,3 +320,4 @@ body.dragging .drop-hint { border-color: var(--accent); }
 @container (min-width: 520px) {
   .inv-row { grid-template-columns: 26px minmax(0,1fr) 250px 36px; grid-template-areas: "on name nums del"; }
 }
+.fields > .span-all { grid-column: 1 / -1; }
