@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff8a3d"/>
+      <stop offset="1" stop-color="#ff4d2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#0f1216"/>
+  <!-- gel sachet -->
+  <path d="M176 92h160l-14 46v236c0 26-21 46-46 46h-40c-25 0-46-20-46-46V138z" fill="url(#g)"/>
+  <rect x="200" y="60" width="112" height="40" rx="10" fill="#ffb238"/>
+  <!-- lightning bolt -->
+  <path d="M268 170l-62 112h46l-14 92 66-122h-48z" fill="#0f1216"/>
+</svg>

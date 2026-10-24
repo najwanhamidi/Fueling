@@ -1,0 +1,25 @@
+{
+  "name": "Fueling: carb calculator & race fuel planner",
+  "short_name": "Fueling",
+  "description": "Scan nutrition labels, calculate grams for a carb target, mix homemade gels by ratio, and plan science-based fueling for runs and races.",
+  "id": "./",
+  "start_url": "./#/single",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#0f1216",
+  "theme_color": "#0f1216",
+  "categories": ["health", "fitness", "sports", "food"],
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Carb calculator", "url": "./#/single", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Gel mixer", "url": "./#/mixer", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Fuel plan", "url": "./#/fuel/basic", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

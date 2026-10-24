@@ -1,0 +1,16 @@
+{
+  "name": "fueling-mobile",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Android wrapper (Capacitor) for the Fueling web app. The android/ project is generated in CI.",
+  "scripts": {
+    "copy": "node copy-web.cjs",
+    "android:init": "node copy-web.cjs && npx cap add android && node patch-android.cjs && npx cap sync android",
+    "android:build": "cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "name": "fueling-desktop",
+  "productName": "Fueling",
+  "version": "1.0.0",
+  "description": "Fueling desktop: nutrition-label carb calculator, gel mixer and running fuel planner.",
+  "main": "main.js",
+  "author": "Najwan Hamidi",
+  "license": "MIT",
+  "homepage": "https://github.com/najwanhamidi/Fueling",
+  "scripts": {
+    "prestart": "node copy-web.cjs",
+    "start": "electron .",
+    "predist": "node copy-web.cjs",
+    "dist": "electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "io.github.najwanhamidi.fueling",
+    "productName": "Fueling",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "www/**/*"
+    ],
+    "icon": "build/icon.png",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "portable": {
+      "artifactName": "Fueling-${version}-portable.exe"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "category": "public.app-category.healthcare-fitness",
+      "extendInfo": {
+        "NSCameraUsageDescription": "Fueling uses the camera to scan nutrition labels."
+      }
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ],
+      "category": "Utility"
+    },
+    "publish": null
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/najwanhamidi/Fueling.git"
+  }
+}

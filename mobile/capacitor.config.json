@@ -1,0 +1,6 @@
+{
+  "appId": "io.github.najwanhamidi.fueling",
+  "appName": "Fueling",
+  "webDir": "www",
+  "android": { "backgroundColor": "#0f1216" }
+}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fueling</title>
+<meta name="description" content="Nutrition-label calculator, gel mixer and science-based running fueling planner.">
+<meta name="theme-color" content="#0f1216">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar" aria-label="Main navigation">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Fueling</span></div>
+    <nav id="side-nav"></nav>
+    <div class="side-foot">
+      <button class="btn ghost small" id="install-btn" hidden>Install app</button>
+      <div class="muted tiny" id="version-tag"></div>
+    </div>
+  </aside>
+  <main id="main">
+    <header id="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span id="page-title">Fueling</span></div>
+      <button class="icon-btn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+    </header>
+    <div id="subtabs"></div>
+    <section id="view" tabindex="-1"></section>
+  </main>
+  <nav id="bottom-nav" aria-label="Main navigation"></nav>
+</div>
+<div id="modal-root"></div>
+<div id="toast-root" aria-live="polite"></div>
+<input type="file" id="file-camera" accept="image/*" capture="environment" hidden>
+<input type="file" id="file-gallery" accept="image/*" hidden>
+<input type="file" id="file-json" accept="application/json,.json" hidden>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "fueling",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Nutrition-label calculator, gel mixer and science-based running fueling planner (PWA).",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:ocr": "node tests/ocr/run.cjs",
+    "serve": "npx --yes http-server app -p 8080 -c-1"
+  },
+  "license": "MIT"
+}
