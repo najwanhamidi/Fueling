@@ -321,3 +321,12 @@ body.dragging .drop-hint { border-color: var(--accent); }
   .inv-row { grid-template-columns: 26px minmax(0,1fr) 250px 36px; grid-template-areas: "on name nums del"; }
 }
 .fields > .span-all { grid-column: 1 / -1; }
+
+/* Mixer: nutrient target rows */
+.trow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg2); }
+.trow-main { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; min-width: 0; }
+.trow-main select { flex: 1 1 0; min-width: 0; }
+.trow-val { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.trow-val > * { flex: 1 1 0; min-width: 0; }
+.trow-val .input-unit > input { width: 100%; }
+.trow-sep { flex: 0 0 auto !important; color: var(--muted); font-weight: 700; }

@@ -1,5 +1,5 @@
 // Mixer maths: carb types, ingredient templates, ratio templates and the mix solver. Pure (no DOM).
-import { amountForCarbs, combine, normalizeFood } from './nutrients.js';
+import { amountForCarbs, combine, normalizeFood, NUTRIENTS } from './nutrients.js';
 
 /**
  * Carbohydrate types: g / f = share of the ingredient's carbohydrate that ends up as glucose / fructose
@@ -90,8 +90,39 @@ export const GENERIC = [
   { name: 'Isomaltulose (Palatinose)', ctype: 'isomaltulose', n: { carbs: 95, sugars: 95, energyKcal: 380, protein: 0, fat: 0, sodium: 0 } },
   { name: 'Medjool dates', ctype: 'dates', n: { carbs: 75, sugars: 66.5, fiber: 6.7, energyKcal: 277, protein: 1.8, fat: 0.2, sodium: 1, potassium: 696 } },
   { name: 'Banana', ctype: 'banana', n: { carbs: 22.8, sugars: 12.2, fiber: 2.6, energyKcal: 89, protein: 1.1, fat: 0.3, sodium: 1, potassium: 358 } },
+  { name: 'Whey protein isolate', ctype: 'other', n: { carbs: 2, sugars: 1, energyKcal: 370, protein: 90, fat: 1 } },
+  { name: 'Pea protein', ctype: 'other', n: { carbs: 5, sugars: 1, energyKcal: 390, protein: 80, fat: 6 } },
+  { name: 'Skimmed milk powder', ctype: 'other', n: { carbs: 52, sugars: 52, energyKcal: 360, protein: 36, fat: 1, sodium: 500, potassium: 1700 } },
+  { name: 'Caffeine (pure powder)', ctype: 'none', n: { caffeine: 100000, carbs: 0, energyKcal: 0, protein: 0, fat: 0 } },
   { name: 'Table salt', ctype: 'none', n: { sodium: 39300, carbs: 0, energyKcal: 0, protein: 0, fat: 0 } },
   { name: 'Water', ctype: 'none', n: { carbs: 0, energyKcal: 0, protein: 0, fat: 0, sodium: 0, sugars: 0 } },
+];
+
+/** Things a target can be set on: every nutrient on the label, plus glucose / fructose (from carb type) and total weight. */
+const TARGET_ORDER = ['carbs', 'protein', 'sodium', 'potassium', 'caffeine', 'energyKcal', 'fat', 'sugars', 'fiber', 'satFat', 'transFat', 'cholesterol', 'addedSugars'];
+export const TARGET_KEYS = [
+  ...TARGET_ORDER.map((k) => NUTRIENTS.find((n) => n.k === k)).filter(Boolean).map((n) => ({ k: n.k, label: n.label, unit: n.unit })),
+  { k: 'glucose', label: 'Glucose (from carb type)', unit: 'g' },
+  { k: 'fructose', label: 'Fructose (from carb type)', unit: 'g' },
+  { k: 'weight', label: 'Total weight of the mix', unit: 'g' },
+];
+const TKEY = Object.fromEntries(TARGET_KEYS.map((t) => [t.k, t]));
+export const targetDef = (k) => TKEY[k] || { k, label: k, unit: '' };
+
+export const newTarget = (type = 'amount') =>
+  type === 'ratio' ? { type: 'ratio', k: 'carbs', k2: 'protein', a: 4, b: 1 } : { type: 'amount', k: 'carbs', op: '=', v: null };
+const A = (k, v, op = '=') => ({ type: 'amount', k, op, v });
+const R = (k, k2, a, b) => ({ type: 'ratio', k, k2, a, b });
+
+/** One-tap target sets. */
+export const TARGET_TEMPLATES = [
+  { id: 'cp', label: 'Carbs + protein', hint: '60 g carbs with 15 g protein', targets: [A('carbs', 60), A('protein', 15)] },
+  { id: 'r41', label: 'Recovery 4 : 1', hint: '80 g carbs with carbs : protein = 4 : 1 (the classic post-run ratio)', targets: [A('carbs', 80), R('carbs', 'protein', 4, 1)] },
+  { id: 'r31', label: 'Recovery 3 : 1', hint: '60 g carbs with carbs : protein = 3 : 1', targets: [A('carbs', 60), R('carbs', 'protein', 3, 1)] },
+  { id: 'cs', label: 'Carbs + sodium', hint: '60 g carbs with 500 mg sodium', targets: [A('carbs', 60), A('sodium', 500)] },
+  { id: 'cc', label: 'Carbs + caffeine', hint: '30 g carbs with 100 mg caffeine (a caffeinated gel)', targets: [A('carbs', 30), A('caffeine', 100)] },
+  { id: 'gf', label: 'Glucose + fructose (g)', hint: '50 g glucose and 40 g fructose (1 : 0.8) from the ingredients\' carb types', targets: [A('glucose', 50), A('fructose', 40)] },
+  { id: 'drink', label: 'Carb drink 500 g', hint: '40 g carbs, 400 mg sodium, 500 g total weight (water fills the rest)', targets: [A('carbs', 40), A('sodium', 400), A('weight', 500)] },
 ];
 
 export const newIng = () => ({ food: null, mode: 'carbs', carbs: 30, grams: null, ratio: 1, ctype: null, gPct: 50, share: 1 });
@@ -118,8 +149,11 @@ export function computeMix(st) {
     }
   };
   const kind = st.ratioKind || 'ingredient';
+  let targets = null;
 
-  if (!st.ratioOn) {
+  if (st.ratioOn && kind === 'targets') {
+    targets = solveTargets(out, st, warnings, fixedAmount);
+  } else if (!st.ratioOn) {
     for (const o of out) {
       if (!o.food) continue;
       if (o.mode === 'grams') o.g = o.grams;
@@ -169,7 +203,170 @@ export function computeMix(st) {
     if (o.type?.g == null) { if (o.type?.id !== 'none') unknownCarb += o.c; continue; }
     G += o.c * o.type.g; F += o.c * o.type.f;
   }
-  return { out, comb, gf: G + F > 0 ? { G, F, unknownCarb } : null, warnings };
+  return { out, comb, gf: G + F > 0 ? { G, F, unknownCarb } : null, warnings, targets };
+}
+
+// ───────────── Multi-target solver (carbs + protein, ratios, any nutrient) ─────────────
+
+/** Amount of target `k` per unit (g / ml) of an ingredient, and whether that value is unknown for the food. */
+function dens(o, k) {
+  if (k === 'weight') return { d: 1, unknown: false };
+  const f = o.food;
+  if (k === 'glucose' || k === 'fructose') {
+    const c = f.n.carbs;
+    if (c == null) return { d: 0, unknown: true };
+    const s = o.type?.[k === 'glucose' ? 'g' : 'f'];
+    if (s == null) return { d: 0, unknown: o.type?.id !== 'none' && c > 0 };
+    return { d: (c / f.basis) * s, unknown: false };
+  }
+  const v = f.n[k];
+  return v == null ? { d: 0, unknown: true } : { d: v / f.basis, unknown: false };
+}
+
+function solveSmall(M, y) {
+  const n = y.length;
+  const Aug = M.map((r, i) => [...r, y[i]]);
+  for (let c = 0; c < n; c++) {
+    let p = c;
+    for (let r = c + 1; r < n; r++) if (Math.abs(Aug[r][c]) > Math.abs(Aug[p][c])) p = r;
+    if (Math.abs(Aug[p][c]) < 1e-14) return null;
+    [Aug[c], Aug[p]] = [Aug[p], Aug[c]];
+    for (let r = 0; r < n; r++) {
+      if (r === c) continue;
+      const f = Aug[r][c] / Aug[c][c];
+      if (f) for (let k = c; k <= n; k++) Aug[r][k] -= f * Aug[c][k];
+    }
+  }
+  return Aug.map((r, i) => r[n] / r[i]);
+}
+
+/**
+ * Non-negative least squares: minimise Σ (a·x − b)² + Σ reg_i·x_i² over x ≥ 0.
+ * The problem is convex and tiny (≤ 8 unknowns), so try every support set and keep the best feasible one.
+ */
+function nnls(rows, n, reg) {
+  let best = new Array(n).fill(0), bestJ = Infinity;
+  for (let mask = 1; mask < 1 << n; mask++) {
+    const idx = [];
+    for (let i = 0; i < n; i++) if ((mask >> i) & 1) idx.push(i);
+    const m = idx.length;
+    const M = Array.from({ length: m }, () => new Array(m).fill(0));
+    const y = new Array(m).fill(0);
+    for (const r of rows) {
+      for (let p = 0; p < m; p++) {
+        y[p] += r.a[idx[p]] * r.b;
+        for (let q = 0; q < m; q++) M[p][q] += r.a[idx[p]] * r.a[idx[q]];
+      }
+    }
+    for (let p = 0; p < m; p++) M[p][p] += reg[idx[p]];
+    const s = solveSmall(M, y);
+    if (!s || s.some((v) => v < -1e-9)) continue;
+    const x = new Array(n).fill(0);
+    idx.forEach((i, p) => (x[i] = Math.max(0, s[p])));
+    let J = 0;
+    for (const r of rows) { let t = -r.b; for (let i = 0; i < n; i++) t += r.a[i] * x[i]; J += t * t; }
+    for (let i = 0; i < n; i++) J += reg[i] * x[i] * x[i];
+    if (J < bestJ - 1e-15) { bestJ = J; best = x; }
+  }
+  return best;
+}
+
+/**
+ * Target mode: choose the amounts of the "Auto" ingredients so the whole mix meets several targets at once,
+ * e.g. carbs = 60 g AND protein = 15 g, a carbs : protein ratio, sodium ≥ 400 mg, total weight = 500 g…
+ * Targets: { type:'amount', k, op:'='|'>='|'<=', v } or { type:'ratio', k, k2, a, b } (k : k2 = a : b).
+ * With more unknowns than targets, many mixes fit; the solution that spreads evenly (weighted by each
+ * ingredient's `share` preference) is picked. If the targets can't all be met, the closest fit is returned.
+ */
+function solveTargets(out, st, warnings, fixedAmount) {
+  const fixed = out.filter((o) => o.food && (o.mode === 'grams' || o.mode === 'fixcarbs'));
+  fixed.forEach(fixedAmount);
+  const auto = out.filter((o) => o.food && o.mode !== 'grams' && o.mode !== 'fixcarbs');
+  const tg = (st.targets || []).filter((t) => (t.type === 'ratio'
+    ? t.k && t.k2 && t.k !== t.k2 && +t.a > 0 && +t.b > 0
+    : t.k && t.v != null && Number.isFinite(+t.v) && +t.v >= 0));
+  if (!tg.length) { warnings.push('Add at least one target.'); return []; }
+  if (!auto.length) { warnings.push('Set at least one ingredient to "Auto (solve)".'); return []; }
+  const n = auto.length;
+  const fixedTotal = (k) => fixed.reduce((a, o) => a + (o.g || 0) * dens(o, k).d, 0) + (k === 'weight' ? +st.water || 0 : 0);
+
+  // typical gram scale of the mix (used to normalise rows and the tie-break term)
+  const scales = [];
+  for (const t of tg) {
+    if (t.type !== 'amount') continue;
+    const mx = Math.max(0, ...auto.map((o) => dens(o, t.k).d));
+    if (mx > 0 && +t.v > 0) scales.push(+t.v / mx);
+  }
+  scales.sort((p, q) => p - q);
+  const S = scales.length ? scales[Math.floor(scales.length / 2)] : 100;
+
+  const rowOf = (t) => {
+    if (t.type === 'ratio') {
+      const a = auto.map((o) => dens(o, t.k).d * +t.b - dens(o, t.k2).d * +t.a);
+      const norm = Math.hypot(...a);
+      if (!(norm > 0)) return { a: a.map(() => 0), b: 0, scale: 1, op: '=', t };
+      return { a, b: -(fixedTotal(t.k) * +t.b - fixedTotal(t.k2) * +t.a), scale: norm * S, op: '=', t };
+    }
+    const a = auto.map((o) => dens(o, t.k).d);
+    const mx = Math.max(0, ...a);
+    return { a, b: +t.v - fixedTotal(t.k), scale: +t.v > 0 ? +t.v : (mx * S) || 1, op: t.op || '=', t };
+  };
+  const rows = tg.map(rowOf);
+  const scaled = (r) => ({ a: r.a.map((v) => v / r.scale), b: r.b / r.scale });
+  const w = auto.map((o) => (+o.share > 0 ? +o.share : 1));
+  const wMean = w.reduce((p, q) => p + q, 0) / n;
+  const LAMBDA = 1e-5;
+  const reg = w.map((v) => LAMBDA / ((S * (v / wMean)) ** 2));
+
+  const active = rows.filter((r) => r.op === '=');
+  const ineq = rows.filter((r) => r.op !== '=');
+  let x = new Array(n).fill(0);
+  for (let iter = 0; iter < 8; iter++) {
+    x = nnls(active.map(scaled), n, reg);
+    const bad = ineq.filter((r) => {
+      if (active.includes(r)) return false;
+      const got = r.a.reduce((p, v, i) => p + v * x[i], 0);
+      const tol = 1e-4 * r.scale;
+      return r.op === '>=' ? got < r.b - tol : got > r.b + tol;
+    });
+    if (!bad.length) break;
+    active.push(...bad);
+  }
+  auto.forEach((o, i) => { o.g = x[i] > 1e-7 ? x[i] : 0; });
+
+  // report: what the final mix actually gives
+  const totalOf = (k) => out.reduce((a, o) => (o.food && o.g > 0 ? a + o.g * dens(o, k).d : a), 0) + (k === 'weight' ? +st.water || 0 : 0);
+  const report = tg.map((t) => {
+    if (t.type === 'ratio') {
+      const g1 = totalOf(t.k), g2 = totalOf(t.k2);
+      const want = +t.a / +t.b;
+      const got = g2 > 0 ? g1 / g2 : g1 > 0 ? Infinity : null;
+      const ok = got != null && Number.isFinite(got) && Math.abs(got - want) <= 0.01 * want;
+      return { type: 'ratio', k: t.k, k2: t.k2, a: +t.a, b: +t.b, got1: g1, got2: g2, gotRatio: got, ok, miss: got == null || !Number.isFinite(got) ? 1 : Math.abs(got - want) / want };
+    }
+    const got = totalOf(t.k);
+    const v = +t.v, op = t.op || '=';
+    const tol = Math.max(0.01 * v, 0.02);
+    const ok = op === '=' ? Math.abs(got - v) <= tol : op === '>=' ? got >= v - tol : got <= v + tol;
+    const miss = ok ? 0 : Math.abs(got - v) / (v || 1);
+    return { type: 'amount', k: t.k, op, v, got, ok, miss };
+  });
+
+  // warn about missing label values that the targets depend on
+  const keys = [...new Set(tg.flatMap((t) => (t.type === 'ratio' ? [t.k, t.k2] : [t.k])))].filter((k) => k !== 'weight');
+  for (const k of keys) {
+    const names = out.filter((o) => o.food && o.g > 0 && dens(o, k).unknown).map((o) => o.food.name);
+    if (names.length) warnings.push(`${names.join(', ')} ${names.length > 1 ? 'have' : 'has'} no ${targetDef(k).label.toLowerCase()} value${names.length > 1 ? 's' : ''}, counted as 0 for that target. Add the value in the ingredient if it contains some.`);
+  }
+  const off = report.filter((r) => !r.ok).sort((p, q) => q.miss - p.miss);
+  if (off.length) {
+    const r = off[0];
+    const hint = r.type === 'ratio'
+      ? `Check the ratio between ${targetDef(r.k).label.toLowerCase()} and ${targetDef(r.k2).label.toLowerCase()}: the ingredients may not allow it together with the other targets.`
+      : `Add an ingredient that is rich in ${targetDef(r.k).label.toLowerCase()}, or relax another target.`;
+    warnings.push(`These ingredients can't meet every target at once, so this is the closest fit (${off.length} target${off.length > 1 ? 's' : ''} off). ${hint}`);
+  }
+  return report;
 }
 
 /**

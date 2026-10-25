@@ -4,7 +4,7 @@ import { viewState, recipes, foods, arsenal } from '../store.js';
 import { per100, renderLabel, normalizeFood } from '../nutrients.js';
 import { sourceButtons, bindSource, foodSummaryHtml } from '../ui/scan.js';
 import { openFoodEditor } from '../ui/foodEditor.js';
-import { CARB_TYPES, RATIO_TEMPLATES, GF_TEMPLATES, GENERIC, newIng, computeMix, guessCType } from '../mix.js';
+import { CARB_TYPES, RATIO_TEMPLATES, GF_TEMPLATES, GENERIC, TARGET_KEYS, TARGET_TEMPLATES, newTarget, targetDef, newIng, computeMix, guessCType } from '../mix.js';
 
 export { computeMix, RATIO_TEMPLATES, GENERIC };
 
@@ -12,7 +12,7 @@ const NUM = 'type="text" data-num autocomplete="off" autocorrect="off" autocapit
 
 const vs = viewState('mixer', {
   name: '', count: 2, ings: [newIng(), newIng()], ratioOn: false, ratioKind: 'ingredient', ratioBasis: 'carbs', ratioTarget: 'first',
-  ratioValue: 60, templateId: '', gfG: 1, gfF: 0.8, water: null, split: 'none', splitValue: null,
+  ratioValue: 60, templateId: '', gfG: 1, gfF: 0.8, targets: [], targetTpl: '', water: null, split: 'none', splitValue: null,
 });
 
 const typeShort = (id) => CARB_TYPES.find((t) => t.id === id)?.short || 'Unknown';
@@ -22,6 +22,18 @@ export function mount(root) {
   const st = vs.get();
   while (st.ings.length < 8) st.ings.push(newIng());
   const kind = () => st.ratioKind || 'ingredient';
+  if (!Array.isArray(st.targets)) st.targets = [];
+  const tOpts = (sel) => TARGET_KEYS.map((t) => `<option value="${t.k}" ${sel === t.k ? 'selected' : ''}>${esc(t.label)}</option>`).join('');
+  const targetRows = () => st.targets.map((t, i) => (t.type === 'ratio'
+    ? `<div class="trow" data-t="${i}">
+        <div class="trow-main"><select data-tk="k">${tOpts(t.k)}</select><span class="trow-sep">:</span><select data-tk="k2">${tOpts(t.k2)}</select></div>
+        <div class="trow-val"><input ${NUM} data-tk="a" value="${t.a ?? ''}" aria-label="Ratio part 1"><span class="trow-sep">:</span><input ${NUM} data-tk="b" value="${t.b ?? ''}" aria-label="Ratio part 2"></div>
+        <button class="btn small ghost danger" data-tdel="${i}" aria-label="Remove target">✕</button></div>`
+    : `<div class="trow" data-t="${i}">
+        <div class="trow-main"><select data-tk="k">${tOpts(t.k)}</select>
+          <select data-tk="op" aria-label="Target type"><option value="=" ${t.op === '=' || !t.op ? 'selected' : ''}>exactly</option><option value=">=" ${t.op === '>=' ? 'selected' : ''}>at least</option><option value="<=" ${t.op === '<=' ? 'selected' : ''}>at most</option></select></div>
+        <div class="trow-val"><div class="input-unit"><input ${NUM} data-tk="v" value="${t.v ?? ''}" placeholder="0"><span class="u">${esc(targetDef(t.k).unit)}</span></div></div>
+        <button class="btn small ghost danger" data-tdel="${i}" aria-label="Remove target">✕</button></div>`)).join('');
 
   const draw = () => {
     const templates = RATIO_TEMPLATES.filter((t) => t.n === st.count);
@@ -38,11 +50,19 @@ export function mount(root) {
               <div class="row nowrap"><button class="btn" data-cnt="-1">−</button><input ${NUM} value="${st.count}" data-count style="text-align:center"><button class="btn" data-cnt="1">+</button></div></label>
           </div>
           <div style="margin-top:14px" class="stack">
-            <label class="switch"><input type="checkbox" data-ratio ${st.ratioOn ? 'checked' : ''}> Auto-calculate amounts from a ratio</label>
+            <label class="switch"><input type="checkbox" data-ratio ${st.ratioOn ? 'checked' : ''}> Auto-calculate amounts (from a ratio or several targets)</label>
             ${st.ratioOn ? `
               <div class="card sub stack">
-                <div class="stack"><span class="small muted">Ratio based on</span>${seg('rkind', [['ingredient', 'Per ingredient'], ['gf', 'Glucose : Fructose']], kind())}</div>
-                ${kind() === 'gf' ? `
+                <div class="stack"><span class="small muted">Calculate by</span>${seg('rkind', [['ingredient', 'Per-ingredient ratio'], ['gf', 'Glucose : Fructose'], ['targets', 'Nutrient targets']], kind())}</div>
+                ${kind() === 'targets' ? `
+                <div><div class="small muted" style="margin-bottom:6px">Target templates</div>
+                  <div class="chips">${TARGET_TEMPLATES.map((t) => `<button class="chip ${st.targetTpl === t.id ? 'active' : ''}" data-ttpl="${t.id}" title="${esc(t.hint)}">${esc(t.label)}</button>`).join('')}</div>
+                  ${st.targetTpl && TARGET_TEMPLATES.find((t) => t.id === st.targetTpl) ? `<div class="tiny muted" style="margin-top:6px">${esc(TARGET_TEMPLATES.find((t) => t.id === st.targetTpl).hint)}</div>` : ''}
+                </div>
+                <div class="stack" data-trows>${targetRows() || '<div class="tiny muted">No targets yet. Pick a template or add one.</div>'}</div>
+                <div class="row"><button class="btn small" data-tadd="amount">+ Add target</button><button class="btn small" data-tadd="ratio">+ Add ratio</button></div>
+                <div class="tiny muted">The whole mix is solved at once: every target is met together, in the amounts shown for ingredients set to <b>Auto (solve)</b>. A target can be an amount (carbs, protein, sodium, caffeine, energy, glucose, fructose or total weight; <i>exactly</i>, <i>at least</i> or <i>at most</i>) or a ratio between two nutrients (e.g. carbs : protein = 4 : 1). With more ingredients than targets several answers fit; the app spreads the amounts evenly, and an ingredient's <b>Preference</b> pushes it up or down. Ingredients set to fixed grams or carbs are counted first. Add water or salt as Auto ingredients to hit a total weight or sodium target.</div>`
+                : kind() === 'gf' ? `
                 <div><div class="small muted" style="margin-bottom:6px">Target glucose : fructose for the whole mix</div>
                   <div class="chips">${GF_TEMPLATES.map((t) => `<button class="chip ${gfTpl === t ? 'active' : ''}" data-gft="${t.id}" title="${esc(t.hint)}">${esc(t.id.replace(':', ' : '))}</button>`).join('')}</div>
                   ${gfTpl ? `<div class="tiny muted" style="margin-top:6px">${esc(gfTpl.hint)}</div>` : ''}
@@ -105,7 +125,11 @@ export function mount(root) {
     $$('[data-cnt]', root).forEach((b) => (b.onclick = () => setCount(st.count + +b.dataset.cnt)));
     $('[data-count]', root).onchange = (e) => setCount(num(e.target.value));
     $('[data-ratio]', root).onchange = (e) => { st.ratioOn = e.target.checked; vs.save(); draw(); };
-    bindSeg(root, 'rkind', (v) => { st.ratioKind = v; vs.save(); draw(); });
+    bindSeg(root, 'rkind', (v) => {
+      st.ratioKind = v;
+      if (v === 'targets' && !st.targets.length) { st.targets = JSON.parse(JSON.stringify(TARGET_TEMPLATES[0].targets)); st.targetTpl = TARGET_TEMPLATES[0].id; }
+      vs.save(); draw();
+    });
     bindSeg(root, 'rbasis', (v) => { st.ratioBasis = v; vs.save(); refreshIngGrams(); result(); });
     $$('[data-tpl]', root).forEach((b) => (b.onclick = () => {
       const id = b.dataset.tpl;
@@ -115,6 +139,24 @@ export function mount(root) {
       st.ratioBasis = 'carbs';
       vs.save(); draw();
     }));
+    $$('[data-ttpl]', root).forEach((b) => (b.onclick = () => {
+      const t = TARGET_TEMPLATES.find((x) => x.id === b.dataset.ttpl);
+      st.targets = JSON.parse(JSON.stringify(t.targets)); st.targetTpl = t.id;
+      vs.save(); draw();
+    }));
+    $$('[data-tadd]', root).forEach((b) => (b.onclick = () => { st.targets.push(newTarget(b.dataset.tadd)); st.targetTpl = ''; vs.save(); draw(); }));
+    $$('[data-tdel]', root).forEach((b) => (b.onclick = () => { st.targets.splice(+b.dataset.tdel, 1); st.targetTpl = ''; vs.save(); draw(); }));
+    $$('[data-t] [data-tk]', root).forEach((el) => {
+      const t = st.targets[+el.closest('[data-t]').dataset.t];
+      el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+        const k = el.dataset.tk;
+        t[k] = el.tagName === 'SELECT' ? el.value : num(el.value);
+        st.targetTpl = '';
+        vs.save();
+        if (el.tagName === 'SELECT') { draw(); return; }
+        refreshIngGrams(); result();
+      });
+    });
     $$('[data-gft]', root).forEach((b) => (b.onclick = () => {
       const t = GF_TEMPLATES.find((x) => x.id === b.dataset.gft);
       st.gfG = t.g; st.gfF = t.f; vs.save(); draw();
@@ -137,6 +179,7 @@ export function mount(root) {
   const modeOptions = (i) => {
     if (!st.ratioOn) return [['carbs', 'Carbs (g)'], ['grams', 'Fixed grams']];
     if (kind() === 'gf') return [['carbs', 'Auto (G : F)'], ['fixcarbs', 'Fixed carbs'], ['grams', 'Fixed grams']];
+    if (kind() === 'targets') return [['carbs', 'Auto (solve)'], ['fixcarbs', 'Fixed carbs'], ['grams', 'Fixed grams']];
     return i === 0 ? null : [['carbs', 'By ratio'], ['fixcarbs', 'Fixed carbs'], ['grams', 'Fixed grams']];
   };
 
@@ -157,9 +200,10 @@ export function mount(root) {
       const noCarb = o.food && !(o.food.n.carbs > 0);
       const opts = modeOptions(i);
       const showRatio = st.ratioOn && kind() === 'ingredient' && (i === 0 || mode === 'carbs') && !noCarb;
-      const showShare = st.ratioOn && kind() === 'gf' && mode === 'carbs' && !noCarb;
+      const tmode = st.ratioOn && kind() === 'targets';
+      const showShare = st.ratioOn && ((kind() === 'gf' && !noCarb) || tmode) && mode === 'carbs';
       const showCarbInput = !noCarb && ((!st.ratioOn && mode !== 'grams') || (st.ratioOn && mode === 'fixcarbs'));
-      const showGramInput = mode === 'grams' || noCarb;
+      const showGramInput = mode === 'grams' || (noCarb && !tmode);
       const ctype = ing.ctype || 'auto';
       const guessed = o.food ? typeShort(guessCType(o.food.name)) : '';
       return `<div class="ing" data-i="${i}">
@@ -169,8 +213,8 @@ export function mount(root) {
           <select data-generic="${i}" style="margin-top:6px"><option value="">…or a common ingredient template (approx. values)</option>${GENERIC.map((g, gi) => `<option value="${gi}">${esc(g.name)}</option>`).join('')}</select>`}
         ${o.food ? `<div class="fields tight">
           ${showRatio ? `<label class="field"><span class="lbl">${i === 0 ? 'Ratio (reference)' : 'Ratio to #1'}</span><input ${NUM} data-ing="ratio" value="${ing.ratio ?? 1}"></label>` : ''}
-          ${opts && !noCarb ? `<label class="field"><span class="lbl">Input as</span><select data-ing="mode">${opts.map(([v, l]) => `<option value="${v}" ${mode === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>` : ''}
-          ${showShare ? `<label class="field"><span class="lbl">Share <span class="muted">within its side</span></span><input ${NUM} data-ing="share" value="${ing.share ?? 1}"></label>` : ''}
+          ${opts && (!noCarb || tmode) ? `<label class="field"><span class="lbl">Input as</span><select data-ing="mode">${opts.map(([v, l]) => `<option value="${v}" ${mode === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>` : ''}
+          ${showShare ? `<label class="field"><span class="lbl">${tmode ? 'Preference' : 'Share'} <span class="muted">${tmode ? 'higher = use more' : 'within its side'}</span></span><input ${NUM} data-ing="share" value="${ing.share ?? 1}"></label>` : ''}
           ${showCarbInput ? `<label class="field"><span class="lbl">${st.ratioOn ? 'Fixed carbs' : 'Carbs required'}</span><div class="input-unit"><input ${NUM} data-ing="carbs" value="${ing.carbs ?? ''}"><span class="u">g</span></div></label>` : ''}
           ${showGramInput ? `<label class="field"><span class="lbl">Amount</span><div class="input-unit"><input ${NUM} data-ing="grams" value="${ing.grams ?? ''}"><span class="u">${o.food.basisUnit}</span></div></label>` : ''}
           <label class="field span-all"><span class="lbl">Carb type <span class="muted">optional</span></span><select data-ing="ctype">${CARB_TYPES.map((t) => `<option value="${t.id}" ${ctype === t.id ? 'selected' : ''}>${esc(t.id === 'auto' ? `Auto (from name: ${guessed})` : t.label)}</option>`).join('')}</select></label>
@@ -188,7 +232,7 @@ export function mount(root) {
         const g = GENERIC[+e.target.value];
         if (!g) return;
         ing.ctype = g.ctype;
-        if (g.ctype === 'none') ing.mode = 'grams';
+        if (g.ctype === 'none' && !(st.ratioOn && kind() === 'targets')) ing.mode = 'grams';
         ing.food = normalizeFood({ name: g.name, basis: 100, basisUnit: 'g', n: g.n, notes: 'Generic approximate values, check your product label' });
         vs.save(); drawIngs(); result();
       });
@@ -225,10 +269,26 @@ export function mount(root) {
     });
   };
 
+  const OPSYM = { '=': '', '>=': '≥ ', '<=': '≤ ' };
+  const targetCard = (targets) => {
+    if (!targets || !targets.length) return '';
+    const rows = targets.map((t) => {
+      if (t.type === 'ratio') {
+        const got = t.gotRatio != null && Number.isFinite(t.gotRatio) ? `${fmt(t.gotRatio * t.b, '', { d: 2 })} : ${fmt(t.b, '', { d: 2 })}` : '—';
+        return `<tr><td>${esc(targetDef(t.k).label)} : ${esc(targetDef(t.k2).label)}</td><td class="r">${fmt(t.a, '', { d: 2 })} : ${fmt(t.b, '', { d: 2 })}</td><td class="r"><b>${got}</b></td><td class="r"><span class="badge ${t.ok ? 'good' : 'warn'}">${t.ok ? 'met' : 'off'}</span></td></tr>`;
+      }
+      const u = targetDef(t.k).unit;
+      return `<tr><td>${esc(targetDef(t.k).label)}</td><td class="r">${OPSYM[t.op] || ''}${fmt(t.v, u)}</td><td class="r"><b>${fmt(t.got, u)}</b></td><td class="r"><span class="badge ${t.ok ? 'good' : 'warn'}">${t.ok ? 'met' : 'off'}</span></td></tr>`;
+    }).join('');
+    const okAll = targets.every((t) => t.ok);
+    return `<div class="card"><div class="card-head"><h2>Targets</h2><span class="badge ${okAll ? 'good' : 'warn'}">${okAll ? 'all met' : 'closest fit'}</span></div>
+      <div class="table-wrap"><table class="t"><thead><tr><th>Target</th><th class="r">Wanted</th><th class="r">Got</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  };
+
   const colors = ['#ff6b35', '#ffb238', '#53b1fd', '#32d583', '#c084fc', '#f97066', '#2dd4bf', '#a3a3a3'];
   const result = () => {
     const el = $('[data-result]', root);
-    const { out, comb, gf, warnings } = computeMix(st);
+    const { out, comb, gf, warnings, targets } = computeMix(st);
     const used = out.filter((o) => o.food && o.g > 0);
     const warnHtml = warnings.map((w) => `<div class="note warn small">${esc(w)}</div>`).join('');
     if (!used.length) { el.innerHTML = `${warnHtml}<div class="card"><div class="empty">Add ingredients and targets to see the combined nutrition facts.</div></div>`; return; }
@@ -272,6 +332,7 @@ export function mount(root) {
           <button class="btn small" data-as-packet>Add to fuel arsenal</button>
         </div>
       </div>
+      ${targetCard(targets)}
       <div class="card">${renderLabel({ title: 'Nutrition Facts', subtitle: st.name || 'Combined mix', columns: cols })}</div>`;
     $('[data-save2]', el).onclick = saveRecipe;
     $('[data-as-food]', el).onclick = async () => {
@@ -303,7 +364,7 @@ export function mount(root) {
     const pick = await modal({
       title: 'Load recipe',
       render: (b, close) => {
-        b.innerHTML = list.length ? `<div class="list">${list.map((r) => `<div class="list-item" data-id="${r.id}"><div class="grow"><div class="t1">${esc(r.name)}</div><div class="t2">${r.state.count} ingredients${r.state.ratioOn ? (r.state.ratioKind === 'gf' ? ` · glucose : fructose 1 : ${fmt((+r.state.gfF || 0) / (+r.state.gfG || 1), '', { d: 2 })}` : ' · ratio mode') : ''} · ${new Date(r.updated).toLocaleDateString()}</div></div><button class="btn small ghost danger" data-del="${r.id}">Delete</button></div>`).join('')}</div>` : '<div class="empty">No saved recipes yet.</div>';
+        b.innerHTML = list.length ? `<div class="list">${list.map((r) => `<div class="list-item" data-id="${r.id}"><div class="grow"><div class="t1">${esc(r.name)}</div><div class="t2">${r.state.count} ingredients${r.state.ratioOn ? (r.state.ratioKind === 'gf' ? ` · glucose : fructose 1 : ${fmt((+r.state.gfF || 0) / (+r.state.gfG || 1), '', { d: 2 })}` : r.state.ratioKind === 'targets' ? ` · ${(r.state.targets || []).length} nutrient targets` : ' · ratio mode') : ''} · ${new Date(r.updated).toLocaleDateString()}</div></div><button class="btn small ghost danger" data-del="${r.id}">Delete</button></div>`).join('')}</div>` : '<div class="empty">No saved recipes yet.</div>';
         b.onclick = async (e) => {
           const del = e.target.closest('[data-del]');
           if (del) { e.stopPropagation(); recipes.remove(del.dataset.del); del.closest('.list-item').remove(); return; }
