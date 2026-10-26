@@ -311,14 +311,15 @@ export function mount(root) {
       <div class="card accent">
         <div class="card-head"><h2>Weigh out</h2><span class="badge">${used.length} ingredient${used.length > 1 ? 's' : ''}</span></div>
         <div class="table-wrap"><table class="t">
-          <thead><tr><th>Ingredient</th><th class="r">Amount</th><th class="r">Carbs</th><th class="r">Share</th></tr></thead>
-          <tbody>${used.map((o) => `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${colors[out.indexOf(o) % 8]};margin-right:6px"></span>${esc(o.food.name)}</td><td class="r"><b>${fmt(o.g, o.food.basisUnit, { d: 1 })}</b></td><td class="r">${fmt(o.c, 'g')}</td><td class="r">${totalC > 0 && o.c != null ? fmt((o.c / totalC) * 100, '%', { d: 0 }) : '—'}</td></tr>`).join('')}
-          ${st.water > 0 ? `<tr><td>Water</td><td class="r"><b>${fmt(st.water, 'g')}</b></td><td class="r">0 g</td><td class="r">–</td></tr>` : ''}
-          <tr class="total"><td>Total</td><td class="r">${fmt(W, 'g', { d: 1 })}</td><td class="r">${fmt(totalC, 'g')}</td><td class="r"></td></tr></tbody></table></div>
+          <thead><tr><th>Ingredient</th><th class="r">Amount</th><th class="r">Carbs</th><th class="r">Protein</th><th class="r">Share</th></tr></thead>
+          <tbody>${used.map((o) => `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${colors[out.indexOf(o) % 8]};margin-right:6px"></span>${esc(o.food.name)}</td><td class="r"><b>${fmt(o.g, o.food.basisUnit, { d: 1 })}</b></td><td class="r">${fmt(o.c, 'g')}</td><td class="r">${o.food.n.protein != null ? fmt((o.food.n.protein * o.g) / o.food.basis, 'g') : '—'}</td><td class="r">${totalC > 0 && o.c != null ? fmt((o.c / totalC) * 100, '%', { d: 0 }) : '—'}</td></tr>`).join('')}
+          ${st.water > 0 ? `<tr><td>Water</td><td class="r"><b>${fmt(st.water, 'g')}</b></td><td class="r">0 g</td><td class="r">0 g</td><td class="r">–</td></tr>` : ''}
+          <tr class="total"><td>Total</td><td class="r">${fmt(W, 'g', { d: 1 })}</td><td class="r">${fmt(totalC, 'g')}</td><td class="r">${comb.partial.has('protein') ? '≥' : ''}${fmt(comb.totals.protein, 'g')}</td><td class="r"></td></tr></tbody></table></div>
         <div class="ratio-bar" style="margin-top:10px">${used.map((o) => `<span style="width:${totalC > 0 ? ((o.c || 0) / totalC) * 100 : 0}%;background:${colors[out.indexOf(o) % 8]}"></span>`).join('')}</div>
         <div class="stat-row" style="margin-top:12px">
           <div class="stat hl"><div class="k">Total carbs</div><div class="v">${fmt(totalC, '')}<small> g</small></div></div>
           ${ratioTxt ? `<div class="stat"><div class="k">Glucose : fructose</div><div class="v" style="font-size:1.1rem">${ratioTxt}</div><div class="tiny muted">${fmt(gf.G, 'g')} glucose · ${fmt(gf.F, 'g')} fructose${targetTxt ? ` · ${targetTxt}` : ''}</div></div>` : ''}
+          <div class="stat"><div class="k">Protein</div><div class="v">${comb.partial.has('protein') ? '≥' : ''}${fmt(comb.totals.protein, '', { d: 1 })}<small> g</small></div></div>
           <div class="stat"><div class="k">Energy</div><div class="v">${comb.partial.has('energyKcal') ? '≥' : ''}${fmt(comb.totals.energyKcal, '', { d: 0 })}<small> kcal</small></div></div>
           <div class="stat"><div class="k">Sodium</div><div class="v">${comb.partial.has('sodium') ? '≥' : ''}${fmt(comb.totals.sodium, '', { d: 0 })}<small> mg</small></div></div>
           <div class="stat"><div class="k">Carb conc.</div><div class="v">${fmt(conc, '', { d: 1 })}<small> %</small></div></div>
